@@ -1,9 +1,8 @@
-#version 300 es
-
-out vec3 pos;
+varying vec3 vPos;
+uniform vec3 SlayColor;
 
 void main() {
-    pos = position;
+    vPos = position;
 
     vec4 result;
 

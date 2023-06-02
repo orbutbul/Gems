@@ -2,7 +2,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { Color } from 'three';
+
+import fragment from './Public/Shaders/a_frag.glsl?raw'
+import vertex from './Public/Shaders/a_vert.glsl?raw'
+
 
 console.log("Slay");
 let number = "Mama";
@@ -43,7 +46,9 @@ function ColorGen(number){
 console.log(ColorGen(number));
 
 // Renderer
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -51,46 +56,49 @@ document.body.appendChild(renderer.domElement);
 
 // Shader Material
 const boxMaterial = new THREE.ShaderMaterial({
+
     uniforms: { 
         SlayColor: {value: ColorGen(number)},
     }
     ,
-    vertexShader:`
+    vertexShader: vertex,
+    // `
 
-    varying vec3 vPos;
-    uniform vec3 SlayColor;
+    // varying vec3 vPos;
+    // uniform vec3 SlayColor;
 
-    void main() {
-        vPos = position;
+    // void main() {
+    //     vPos = position;
     
-        vec4 result;
+    //     vec4 result;
     
-        result = vec4(position.x, position.y, position.z, 1.0);
-        gl_Position = projectionMatrix * modelViewMatrix * result;
-    } `,
-    fragmentShader:`
-    varying vec3 vPos;
-    uniform vec3 uPos;
-    uniform vec3 SlayColor;
+    //     result = vec4(position.x, position.y, position.z, 1.0);
+    //     gl_Position = projectionMatrix * modelViewMatrix * result;
+    // } `,
+    fragmentShader: fragment
+    // `
+    // varying vec3 vPos;
+    // uniform vec3 uPos;
+    // uniform vec3 SlayColor;
 
-    const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio 
+    // const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio 
 
-    float gold_noise(in vec3 xyz)
-    {
-        return fract(tan(distance(xyz*PHI, xyz)*1938324.)*xyz.x);
-    }
+    // float gold_noise(in vec3 xyz)
+    // {
+    //     return fract(tan(distance(xyz*PHI, xyz)*1938324.)*xyz.x);
+    // }
 
-    void main() {
-        vec3 pos = vPos + uPos; // Modify the pos variable with uPos
-        pos += 1.;
-        pos /= 2.;
-        pos *= 4.;
-        vec3 girdPos = fract(pos);
-        vec3 gridPosId = floor(pos);
-        gridPosId *= .25;
-        float slay = gold_noise(pos);
-        gl_FragColor = vec4(gridPosId,1.); 
-    }` ,
+    // void main() {
+    //     vec3 pos = vPos + uPos; // Modify the pos variable with uPos
+    //     pos += 1.;
+    //     pos /= 2.;
+    //     pos *= 4.;
+    //     vec3 girdPos = fract(pos);
+    //     vec3 gridPosId = floor(pos);
+    //     gridPosId *= .25;
+    //     float slay = gold_noise(pos);
+    //     gl_FragColor = vec4(gridPosId,1.); 
+    // }` ,
 });
 
 // Scene
@@ -99,7 +107,7 @@ scene.background = new THREE.Color("rgb(214,195,144)");
 
 // Orbit Controls
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
-camera.position.set(0, 2, 20);
+camera.position.set(0, 2, 5);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 
