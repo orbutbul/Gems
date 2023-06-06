@@ -1,4 +1,5 @@
 import math
+import statistics
 """
 First the user would enter a seed value in html, then js would use this seed value into a number in base 36
 
@@ -44,30 +45,56 @@ def geo(seed):
         case other:
             return(other)
 
-def digitSum(seed):
+def digitSum(seed,isfirst = True):
     sum =0
     for digits in (str(seed)):
         sum+= int(digits)
-    if sum > 10:
+    if sum > 10 and isfirst:
         return(digitSum(sum))
     else:
         return(sum)
-seed = "Mallory"
+    
+def magnitude(seed):
+    x= f'{seed/ 3656158440062975:.9f}f'
+    return x
+
+def common(seed):
+    listgirl = []
+    for digit in str(seed):
+        listgirl.append(digit)
+    return statistics.mode(listgirl)
+
+def firstDigit(seed):
+    x = str(seed)[0]
+    return int(x)
+
+def isShiny(seed):
+    if (seed % 2) == 0:
+        return True
+    else:
+        return False
+seed = "zzzzzzzzy"
 
 seed = Base36(seed)
 print(seed)
-print(9007199254740991)
-print(digitSum(seed))
-seednew = seed
+# print(9007199254740991)
+# print(digitSum(seed,True))
+# print(magnitude(seed))
+# print(common(seed))
+print(firstDigit(seed))
+print(isShiny(seed))
 
-    
 
 """
 the seed value would then be used to get a set amount of uniforms to bring into the shader
 -- possible uniforms
 -for color i believe the amount should be between 1 and 3, and that part of the seed should determine that and that the colors will be passed in as uniforms
 - binary string for if statements
+-better to use arrays
+"""
 
+
+"""
 with this it opens the possibility of levels of heirarchy in characteristics and in that, rarity
 we can have 12 possible categories, 3 of them can be metacategories that allow other categories to happen
 ie 2 categories can be a striped texture or a noise texture.
@@ -80,6 +107,8 @@ Things i can extrapolate from the seed value
 - modulo
 - amount of a certain number in the total number
 the total of the numbers digits
+- the digit sum (0-9)
+
 
 list of metacategories
 - amount of colors present in gemstones
@@ -92,12 +121,14 @@ list of metacategories
 list of categories
 color
     -random rgb
-    
 texture implemented
     -voronoi, value noise, perlin, honeycomb, striped 
+    float 1-4
 amount of color ramp nodes
+float -colors + randomcolormultiply
 color ramp positions
     -should direclty correspond with the colors present in the gemstone but color nodes should have a random chance of doubling and distributing somewhere on the color ramp
+    -
 roughness
     - could be boolean (isrough/isnot)
     *even odd
@@ -115,18 +146,19 @@ the shader would then call multiple if statements to see what charecteristics of
 
 
 #Gem Pipeline
-- Pick Shape
+- Pick Shape 0-12
     -switch statement call
-- Determine the amount of textures
-    -
+- Determine the amount of textures 0-4
 - Determine which textures are used
     - call the function to add the value to the function then divide by 2 or clamp
-- Pick Amount of colors
-- Pick colors
+-initialize textures
+- Pick Amount of colors 0-3
+- Pick colors practically infinite
     - append colors to color ramp and change around their positions
+-pick is shiny or not
 """
 
-seed = "Hello"
+seed = "Mallory"
+seed = Base36(seed)
+print(geo(seed))
 
-
-    

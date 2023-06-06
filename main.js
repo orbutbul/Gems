@@ -5,10 +5,11 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 
 import fragment from './Public/Shaders/a_frag.glsl?raw'
 import vertex from './Public/Shaders/a_vert.glsl?raw'
+import { MeshPhongMaterial } from 'three';
 
 
 console.log("Slay");
-let number = "Mama";
+let number = "";
 number = number.toLowerCase();
 
 const colors = ["red","orange","yellow","green","blue","purple","black","white"]
@@ -48,6 +49,7 @@ console.log(ColorGen(number));
 // Renderer
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
+    alpha: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -56,6 +58,7 @@ document.body.appendChild(renderer.domElement);
 
 // Shader Material
 const boxMaterial = new THREE.ShaderMaterial({
+    transparent: true,
 
     uniforms: { 
         SlayColor: {value: ColorGen(number)},
@@ -101,6 +104,10 @@ const boxMaterial = new THREE.ShaderMaterial({
     // }` ,
 });
 
+const mattybraps = new THREE.MeshPhongMaterial({
+    color: 0x00ff00,
+    flatShading: false,
+})
 // Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("rgb(214,195,144)");
@@ -128,10 +135,11 @@ function gltfModel(obj) {
     });
 }
 
-gltfModel('cube.glb');
+gltfModel('CoolCube.glb');
 const geometry = new THREE.BoxGeometry( 12, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
+// scene.add(cube);
 
 
 
