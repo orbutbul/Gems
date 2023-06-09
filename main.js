@@ -5,8 +5,6 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 
 import fragment from './Public/Shaders/a_frag.glsl?raw'
 import vertex from './Public/Shaders/a_vert.glsl?raw'
-import { MeshPhongMaterial } from 'three';
-
 
 console.log("Slay");
 let number = "";
@@ -26,9 +24,9 @@ colorNameChecker(number);
 
 function returnColorComp(component,start,end){
     component= parseInt(component.substring(start,end));
-    component = (component % 255);
-    if (component <= 40){
-        component *= 1.5;
+    component = (component % 255)/255;
+    if (component <= .1){
+        Math.sqrt(1 - Math.pow(component - 1, 2));
     }
     return (component/255);
 }
@@ -65,43 +63,9 @@ const boxMaterial = new THREE.ShaderMaterial({
     }
     ,
     vertexShader: vertex,
-    // `
 
-    // varying vec3 vPos;
-    // uniform vec3 SlayColor;
-
-    // void main() {
-    //     vPos = position;
-    
-    //     vec4 result;
-    
-    //     result = vec4(position.x, position.y, position.z, 1.0);
-    //     gl_Position = projectionMatrix * modelViewMatrix * result;
-    // } `,
     fragmentShader: fragment
-    // `
-    // varying vec3 vPos;
-    // uniform vec3 uPos;
-    // uniform vec3 SlayColor;
 
-    // const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio 
-
-    // float gold_noise(in vec3 xyz)
-    // {
-    //     return fract(tan(distance(xyz*PHI, xyz)*1938324.)*xyz.x);
-    // }
-
-    // void main() {
-    //     vec3 pos = vPos + uPos; // Modify the pos variable with uPos
-    //     pos += 1.;
-    //     pos /= 2.;
-    //     pos *= 4.;
-    //     vec3 girdPos = fract(pos);
-    //     vec3 gridPosId = floor(pos);
-    //     gridPosId *= .25;
-    //     float slay = gold_noise(pos);
-    //     gl_FragColor = vec4(gridPosId,1.); 
-    // }` ,
 });
 
 const mattybraps = new THREE.MeshPhongMaterial({
@@ -135,7 +99,7 @@ function gltfModel(obj) {
     });
 }
 
-gltfModel('CoolCube.glb');
+gltfModel('Cube.glb');
 const geometry = new THREE.BoxGeometry( 12, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
@@ -146,6 +110,8 @@ const cube = new THREE.Mesh( geometry, material );
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 scene.add(ambientLight, directionalLight);
+
+
 
 // Animate Loop
 function animate() {
