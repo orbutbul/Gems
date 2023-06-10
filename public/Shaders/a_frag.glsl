@@ -5,12 +5,13 @@ uniform vec3 SlayColor;
 
 
 const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio 
-
+vec3 quintic(vec3 p) {
+  return p*p*p*(p*(p*6.0-15.0)+10.0);
+}
 float gold_noise(in vec3 xyz)
 {
-    return fract(tan(distance(xyz*PHI, xyz)*1938324.)*xyz.x);
+    return fract(tan(distance(xyz*PHI, xyz)*1938324.));
 }
-
 
 float sinstriped(float axis,float scale){
     scale *=3.1415;
@@ -37,38 +38,6 @@ vec3 randomVec(vec3 p)
 
     return (gradient);
 
-}
-
-
-float voronoi(vec3 uv,float uvpos, float scale ){
-    uv *= scale;
-    uv += uvpos;
-    float d= 0.;
-    float minDist = 100.;
-    vec3 gridUv = fract(uv)-.5;
-    vec3 gridId = floor(uv);
-    vec3 cid =   vec3(0);
-    for(float z = -1.; z <= 1.; z++) {
-        for(float y=-1.;y<=1.;y++){
-            for(float x=-1.; x<=1.; x++){
-                vec3 offs = vec3(x,y,z);
-
-                vec3 n = randomVec(gridId+offs);
-                vec3 p = offs+sin(n)*.5;
-                float d = length(gridUv-p);
-
-                if (d<minDist){
-                    minDist =d;
-                    cid = gridId + offs;
-                }
-            }
-        }
-    }
-    return minDist;
-}
-
-vec3 quintic(vec3 p) {
-  return p*p*p*(p*(p*6.0-15.0)+10.0);
 }
 
 
@@ -123,6 +92,7 @@ float Perlin(vec3 uv, float uvPos, float scale){
 
   return perlin;
 }
+
 float fractalPerlin(vec3 uv, float uvPos, float scale, int octaves){
     float total = 0.0; 
     float frequency = 1.0;
@@ -142,12 +112,93 @@ float fractalPerlin(vec3 uv, float uvPos, float scale, int octaves){
     return (total/maxValue)+.3;
 }
 
+float valueFunction(vec3 uv, float uvpos, float scale) {
+    uv *= scale;
+
+    vec3 gridUv= fract(uv);
+    vec3 gridId = floor(uv);
+    
+    gridUv = smoothstep(0.,1.,gridUv);
+
+
+    float q000 = gold_noise(gridId);
+    float q100 = gold_noise(gridId + vec3(1.,0.,0.));
+    float q010 = gold_noise(gridId + vec3(0.,1.,0.));
+    float q110 = gold_noise(gridId + vec3(1.,1.,0.));
+    float q001 = gold_noise(gridId + vec3(0.,0.,1.));
+    float q101 = gold_noise(gridId + vec3(1.,0.,1.));
+    float q011 = gold_noise(gridId + vec3(0.,1.,1.));
+    float q111 = gold_noise(gridId + vec3(1.));
+
+    float q1 = mix(q000,q100,gridUv.x);
+    float q2 = mix(q010,q110,gridUv.x);
+
+    float q3 = mix(q1,q2,gridUv.y);
+    float q4 = mix(q001,q101,gridUv.x);
+    float q5 = mix(q011,q111,gridUv.x);
+    float q6 = mix(q4,q5,gridUv.y);
+    float value = mix(q3,q6,gridUv.z);    
+
+    return value;
+}
+
+float fractalValueNoise(vec3 uv, float uvpos, float scale,int octaves){
+    
+    float total = 0.0; 
+    float frequency = 1.0;
+    float amplitude = 1.0;
+    float maxValue = 0.0;  //Used for normalizing result
+
+    for(int i = 0; i < MAX_ITER; i++) {
+        if (i>=octaves) break;
+        total += valueFunction((uv * frequency), uvpos, scale) * amplitude;
+
+        maxValue += amplitude;
+
+        amplitude /= 2.0;
+        frequency *= 2.0;
+    }
+    
+    return (total/maxValue);
+
+    return 1.;
+}
+
+float voronoi(vec3 uv,float uvpos, float scale ){
+    uv += uvpos;
+    uv *= scale;
+    float d= 0.;
+    float minDist = 100.;
+    vec3 gridUv = fract(uv)-.5;
+    vec3 gridId = floor(uv);
+    vec3 cid =   vec3(0);
+    for(float z = -1.; z <= 1.; z++) {
+        for(float y=-1.;y<=1.;y++){
+            for(float x=-1.; x<=1.; x++){
+                vec3 offs = vec3(x,y,z);
+
+                vec3 n = randomVec(gridId+offs);
+                vec3 p = offs+sin(n)*.5;
+                float d = length(gridUv-p);
+
+                if (d<minDist){
+                    minDist =d;
+                    cid = gridId + offs;
+                }
+            }
+        }
+    }
+    return minDist;
+}
+
+
+
 struct colorStop{
     vec3 color;
     float position;
 };
 
-vec3 colorRamp(colorStop[4] colors, float fac){
+vec3 colorRamp(colorStop[3] colors, float fac){
     int index =0;
     for(int i = 0; i < colors.length() -1; i++) {
         colorStop currentColor = colors[i];
@@ -176,14 +227,14 @@ vec3 colorRamp(colorStop[4] colors, float fac){
         gridPosId *= .25;
         float slay = gold_noise(pos);
 
-        colorStop[4] colors = colorStop[](
-            colorStop(vec3(0.),0.),
-            colorStop(vec3(0.,1.,0.),.5),
-            colorStop(vec3(0.09, 0.5, 0.6),.3),
-            colorStop(vec3(1.,0.,0.),1.)
-        );
-        vec3 finalColor = colorRamp(colors,(pos.x * pos.y * pos.z));
-
-        finalColor = vec3(voronoi(pos,12.,10.));
-        gl_FragColor = vec4(vec3(1.,0.,1.),finalColor); 
+        // colorStop[3] colors = colorStop[](
+        //     colorStop(vec3(0.),0.),
+        //     colorStop(vec3(0.09, 0.5, 0.6),.3),
+        //     colorStop(vec3(0.,1.,0.),.5),
+        //     colorStop(vec3(1.,0.,0.),1.)
+        // );
+        // vec3 finalColor = colorRamp(colors,(pos.x * pos.y * pos.z));
+        float finalFinal= fractalValueNoise(pos,7.,7.,7);
+        
+        gl_FragColor = vec4(vec3(finalFinal),1.); 
     }

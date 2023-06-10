@@ -12,38 +12,17 @@ def Base36(seed):
     i=0
     while True:
         if len(str(seed)) < 10:
-            print("Shorty")
             seed += seed[i]
             i+=1
         else:
             break
     return int(seed)
 
+listOfObjects =["Cube", "Hex Bipyramid", "Icosahedron", "Oct Cupola", "Octahedron", "Pyramid", "Sphere", "Square Antiprism", "Torus", "Triak Tetrahedron",  "Triaug Pyramid", "Truncated Cube"]
 def geo(seed):
     x= ("Its a ")
-    geo = (seed % 7)
-    match geo:
-        case 0:
-            return(x+ "cupola")
-        case 1:
-            return(x+ "Cube")
-        case 2:
-            return(x+ "Pyramid")
-        case 3:
-            return(x+ "sphere")
-        case 4:
-            return(x+ "truncated Cube")
-        case 5:
-            return(x+ "octohedron")
-        case 6:
-            return(x+ "torus")
-        case 7:
-            return(x+ "square antprism")
-        case 8:
-            return(x+ "triagonal bipyramid")
-
-        case other:
-            return(other)
+    geo = (seed % 12)
+    return( x + listOfObjects[geo])
 
 def digitSum(seed,isfirst = True):
     sum =0
@@ -55,14 +34,15 @@ def digitSum(seed,isfirst = True):
         return(sum)
     
 def magnitude(seed):
-    x= f'{seed/ 3656158440062975:.9f}f'
-    return x
+    x= seed/ 3656158440062975
+    return float(x)
 
 def common(seed):
     listgirl = []
     for digit in str(seed):
         listgirl.append(digit)
-    return statistics.mode(listgirl)
+    x= (int(statistics.mode(listgirl))%2)
+    return int(x)
 
 def firstDigit(seed):
     x = str(seed)[0]
@@ -73,17 +53,13 @@ def isShiny(seed):
         return True
     else:
         return False
-seed = "zzzzzzzzy"
+    
+listOfTextures=["voronoi", "value noise", "perlin", "striped "]
 
-seed = Base36(seed)
-print(seed)
 # print(9007199254740991)
 # print(digitSum(seed,True))
 # print(magnitude(seed))
 # print(common(seed))
-print(firstDigit(seed))
-print(isShiny(seed))
-
 
 """
 the seed value would then be used to get a set amount of uniforms to bring into the shader
@@ -122,7 +98,7 @@ list of categories
 color
     -random rgb
 texture implemented
-    -voronoi, value noise, perlin, honeycomb, striped 
+    -voronoi, value noise, perlin, striped 
     float 1-4
 amount of color ramp nodes
 float -colors + randomcolormultiply
@@ -146,19 +122,91 @@ the shader would then call multiple if statements to see what charecteristics of
 
 
 #Gem Pipeline
-- Pick Shape 0-12
+
+first the js file will determine what shape the gem is and how many colors it will have and how many textures it will have.
+
+then the file will pass in all of the parameters needed to initialize the noise and color functions as a 
+
+!- Pick Shape 0-12
     -switch statement call
-- Determine the amount of textures 0-4
+!- Determine the amount of textures 0-4
 - Determine which textures are used
     - call the function to add the value to the function then divide by 2 or clamp
+    - mix the noise between another noise texture or texture gradient
 -initialize textures
+    -Scale
+    -octaves
+    -position
 - Pick Amount of colors 0-3
-- Pick colors practically infinite
+- Pick colors - practically infinite
     - append colors to color ramp and change around their positions
 -pick is shiny or not
+
+//glsl pseudo
+uniform = 100110101
+uniform seed
+vec3 finalcolor = vec3(0);
+
+if "condition 1 is true"
+    color += "result"
+
+if "condition 2 is true"
+    color += mix(tex1,tex2,tex3)
+
+-numofcolors
+if amtofcolors 2
+    color = mix(color1,color2,textures)
+if amtofcolors 3
+    textures -= .6;
+    color = mix(mix(color1,color2,(textures-.6),color3,)
+    colorramp(numofcolors,color*using the textures as the factor*)
+-shiny
+if last digit == 1
+    shiny = code that would add reflections and lighting to shape
+    color += shiny
 """
-
-seed = "Mallory"
+seed = "zzzzzzzzzx"
 seed = Base36(seed)
+print(seed)
 print(geo(seed))
+"""
+If condition = 1 then there will be 1 texture, otherwise there will be three textures, where one will blend between the two"""
+if (firstDigit(seed)%2) == 0:
+    listOfTextures.remove(listOfTextures[digitSum(seed) % 4])
+    print(listOfTextures)
+    blendTex = listOfTextures[ common(seed)% 2]
+    print("The Blending texture is")
+    print(blendTex)
+else:
+    print("The texture of the object will be")
+    print(listOfTextures[digitSum(seed) % 4])
 
+def colorAmt(seed):
+    if magnitude(seed)>.85:
+        print("the seed will have 3 colors")
+        return(3)
+    elif magnitude(seed)>.01:
+        print("the seed will have 2 colors")
+        return(2)
+    else:
+        print("the seed will have 1 color")
+        return(1)
+
+def colorReturn(seed):
+    color=[]
+    x=0
+    for i in range(3):
+        seed = str(seed)
+        y = x+3
+        
+        colorSlice = int(seed[x:y]) % 255
+        color.append(colorSlice)
+        x+= 3
+    return(color)
+listofColors =[]
+for x in range(colorAmt(seed)):
+    seed *= (x+1) #This will be replaced with an LCG
+    seed = seed % 3656158440062975
+
+    listofColors.append(colorReturn(seed))
+print(listofColors)
