@@ -6,6 +6,15 @@ First the user would enter a seed value in html, then js would use this seed val
 the seed value will first be used to call a switch statement in the js code that will determine the geometry used for the gem
 
 """
+
+
+
+def lcg(seed=1, a=1103515245, c=12345, m=3656158440062975):
+    for i in range(10):
+        seed = (a * seed + c) % m
+    return seed
+
+potentialSeeds= ["Mallory", "John", "Alexis", "1111111111", "Cronchy", "Clandestin", "Gemerator", ]
 def Base36(seed):
     seed = int(seed,36)
     seed = str(seed)
@@ -33,9 +42,21 @@ def digitSum(seed,isfirst = True):
     else:
         return(sum)
     
+def digitProduct(seed,isfirst = True):
+    product =1
+    for digits in (str(seed)):
+        if digits == "0":
+            product *= 1
+        else:
+            product*= int(digits)
+    if product > 10 and isfirst:
+        return(digitProduct(product))
+    else:
+        return(product)
+
 def magnitude(seed):
-    x= seed/ 3656158440062975
-    return float(x)
+    seed /= 3656158440062975
+    return seed
 
 def common(seed):
     listgirl = []
@@ -56,10 +77,13 @@ def isShiny(seed):
     
 listOfTextures=["voronoi", "value noise", "perlin", "striped "]
 
-# print(9007199254740991)
-# print(digitSum(seed,True))
-# print(magnitude(seed))
-# print(common(seed))
+def initTexture(seed):
+    #add some kind of prng to the seed
+    uvpos = firstDigit(seed)
+    scale = (digitSum(seed,False) / digitSum(seed))
+    octaves = (lcg(seed) % 7) +1
+    return ("The texture has position " + str(uvpos)+ " Scale " + str(scale)+ " And Octaves " + str(octaves))
+
 
 """
 the seed value would then be used to get a set amount of uniforms to bring into the shader
@@ -165,31 +189,47 @@ if last digit == 1
     shiny = code that would add reflections and lighting to shape
     color += shiny
 """
-seed = "zzzzzzzzzx"
+seed = "Shmalexise"
 seed = Base36(seed)
 print(seed)
+print(digitSum(seed))
+print(digitProduct(seed))
+
 print(geo(seed))
 """
 If condition = 1 then there will be 1 texture, otherwise there will be three textures, where one will blend between the two"""
-if (firstDigit(seed)%2) == 0:
+if (firstDigit(seed)%3) == 0:
+    print("The Object will have 3 textures")
     listOfTextures.remove(listOfTextures[digitSum(seed) % 4])
-    print(listOfTextures)
+    for x, textures in enumerate(listOfTextures):
+        print (textures)
+        print(initTexture(seed* lcg(x)))
     blendTex = listOfTextures[ common(seed)% 2]
     print("The Blending texture is")
     print(blendTex)
+elif (firstDigit(seed)%3) == 1:
+    print("The Object will have 2 textures")
+    listOfTextures.remove(listOfTextures[digitSum(seed) % 4])
+    listOfTextures.remove(listOfTextures[seed % 3])
+    for x, textures in enumerate(listOfTextures):
+        print (textures)
+        print(initTexture(seed* lcg(x)))
+    blendTex = listOfTextures[ common(seed)% 2]
+
 else:
+    print("The Object will have 1 texture")
     print("The texture of the object will be")
     print(listOfTextures[digitSum(seed) % 4])
 
 def colorAmt(seed):
     if magnitude(seed)>.85:
-        print("the seed will have 3 colors")
+        print("the object will have 3 colors")
         return(3)
     elif magnitude(seed)>.01:
-        print("the seed will have 2 colors")
+        print("the object will have 2 colors")
         return(2)
     else:
-        print("the seed will have 1 color")
+        print("the object will have 1 color")
         return(1)
 
 def colorReturn(seed):
@@ -205,8 +245,12 @@ def colorReturn(seed):
     return(color)
 listofColors =[]
 for x in range(colorAmt(seed)):
-    seed *= (x+1) #This will be replaced with an LCG
-    seed = seed % 3656158440062975
-
+    seed = lcg(seed)
     listofColors.append(colorReturn(seed))
 print(listofColors)
+
+if isShiny(seed)== True:
+    print("the object is shiny")
+else:
+    print("the object is matte")
+

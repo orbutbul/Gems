@@ -3,48 +3,20 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import WebGL from 'three/addons/capabilities/WebGL.js';
 
-import fragment from './Public/Shaders/a_frag.glsl?raw'
-import vertex from './Public/Shaders/a_vert.glsl?raw'
+import * as Seed from './Seed.js';
 
-console.log("Slay");
-let number = "";
-number = number.toLowerCase();
+import fragment from './Public/Shaders/a_frag.glsl?raw';
+import vertex from './Public/Shaders/a_vert.glsl?raw';
 
-const colors = ["red","orange","yellow","green","blue","purple","black","white"]
-
-
-function colorNameChecker (seed){
-    colors.forEach(function(color){
-        if (seed.includes(color)){
-            console.log(color);
-        }
-    })
-}
-colorNameChecker(number);
-
-function returnColorComp(component,start,end){
-    component= parseInt(component.substring(start,end));
-    component = (component % 255)/255;
-    if (component <= .1){
-        Math.sqrt(1 - Math.pow(component - 1, 2));
-    }
-    return (component/255);
-}
-
-
-function ColorGen(number){
-    number = parseInt(number,36);
-    number = number.toString();
-    let red = returnColorComp(number,0,2);
-    let green = returnColorComp(number,3,5);
-    let blue = returnColorComp(number,6,8);
-    const GeoColor = new THREE.Color(red,green,blue);
-    return(GeoColor);
-}
-
-console.log(ColorGen(number));
+let seed = "bredley";
 
 // Renderer
+
+export const colors = ["red", "orange", "yellow", "green", "blue", "purple", "black", "white"];
+
+console.log(Seed.colorNameChecker(seed));
+
+
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true,
@@ -53,14 +25,12 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 
-
 // Shader Material
 const boxMaterial = new THREE.ShaderMaterial({
     transparent: true,
 
     uniforms: { 
-        SlayColor: {value: ColorGen(number)},
-    }
+        }
     ,
     vertexShader: vertex,
 
@@ -68,10 +38,6 @@ const boxMaterial = new THREE.ShaderMaterial({
 
 });
 
-const mattybraps = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
-    flatShading: false,
-})
 // Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("rgb(214,195,144)");
@@ -100,12 +66,13 @@ function gltfModel(obj) {
 }
 
 gltfModel('Cube.glb');
-const geometry = new THREE.BoxGeometry( 12, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
+// const geometry = new THREE.BoxGeometry( 12, 1, 1 );
+// const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+// const cube = new THREE.Mesh( geometry, material );
 // scene.add(cube);
 
-
+const axesHelper = new THREE.AxesHelper( 5 );
+scene.add( axesHelper );
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);

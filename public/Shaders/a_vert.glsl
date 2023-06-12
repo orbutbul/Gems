@@ -1,8 +1,9 @@
 varying vec3 vPos;
-uniform vec3 SlayColor;
+varying vec3 vnorm;
 
 void main() {
     vPos = position;
+    vnorm = normal;
 
     vec4 result;
 
