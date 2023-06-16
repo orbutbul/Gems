@@ -2,6 +2,7 @@ varying vec3 vPos;
 uniform vec3 uPos;
 varying vec3 vnorm;
 uniform vec3 unorm;
+uniform vec3 Colorie;
 #define MAX_ITER 100
 
 
@@ -255,5 +256,6 @@ vec3 colorRamp(colorStop[3] colors, float fac){
         finalFinal =(fractalValue + voronoee)/2.; 
         vec3 finalColor = colorRamp(colors,(finalFinal));
         color = vec3(finalColor);
+        color = vec3(Colorie);
         gl_FragColor = vec4(color,1.); 
     }

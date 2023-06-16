@@ -8,28 +8,41 @@ import * as Seed from './Seed.js';
 import fragment from './Public/Shaders/a_frag.glsl?raw';
 import vertex from './Public/Shaders/a_vert.glsl?raw';
 
-let seed = "bredley";
+let final = "zzzzzzzzzz";
+console.log(final);
+final = Seed.Base36(final);
+console.log(Seed.gemInit(final));
 
-// Renderer
 
-export const colors = ["red", "orange", "yellow", "green", "blue", "purple", "black", "white"];
+const col = Seed.colorgen(final);
 
-console.log(Seed.colorNameChecker(seed));
+const colorie = new THREE.Color(col[0],col[1],col[2]);
+
+
 
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true,
 });
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 
-// Shader Material
-const boxMaterial = new THREE.ShaderMaterial({
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("rgb(214,195,144)");
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+camera.position.set(0, 2, 5);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.update();
+
+const gemMaterial = new THREE.ShaderMaterial({
     transparent: true,
 
     uniforms: { 
+        Colorie : {value: colorie},
         }
     ,
     vertexShader: vertex,
@@ -38,26 +51,15 @@ const boxMaterial = new THREE.ShaderMaterial({
 
 });
 
-// Scene
-const scene = new THREE.Scene();
-scene.background = new THREE.Color("rgb(214,195,144)");
-
-// Orbit Controls
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
-camera.position.set(0, 2, 5);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.update();
-
 const loader = new GLTFLoader();
-
 function gltfModel(obj) {
-    obj = 'Public/Models/' + obj;
+    obj = 'Public/Models/' + obj + '.glb';
     loader.load(obj, function (gltf) {
         const loadedobject = gltf.scene;
 
         loadedobject.traverse((child) => {
             if (child.isMesh) {
-                child.material = boxMaterial;
+                child.material = gemMaterial;
             }
         });
 
@@ -65,11 +67,8 @@ function gltfModel(obj) {
     });
 }
 
-gltfModel('Cube.glb');
-// const geometry = new THREE.BoxGeometry( 12, 1, 1 );
-// const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-// const cube = new THREE.Mesh( geometry, material );
-// scene.add(cube);
+gltfModel(Seed.geo(final));
+
 
 const axesHelper = new THREE.AxesHelper( 5 );
 scene.add( axesHelper );
@@ -80,15 +79,12 @@ scene.add(ambientLight, directionalLight);
 
 
 
-// Animate Loop
+
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
 }
-
-
-
 
 if (WebGL.isWebGLAvailable()) {
     animate();
