@@ -13,7 +13,7 @@ export const listOfTextures =["voronoi", "Striped", "ValueNoise", "Perlin"]
 // }
 
 
-function lcg(seed=1, a=1103515245, c=12345, m=3656158440062975,x=10) {
+export function lcg(seed=1, a=1103515245, c=12345, m=3656158440062975,x=10) {
     for (let i = 0; i < x; i++) {        
         seed = (a * seed + c) % m;
     }
@@ -63,8 +63,14 @@ export function Base36(seed) {
 
 export function geo(seed){
     let x = (seed % 12);
-    return listOfObjects[x];
+    if (x != undefined)
+        return listOfObjects[x];
+    else
+        return("Cube");
 }
+
+
+
 
 function common(number) {
     const digitCounts = new Map();
@@ -95,18 +101,21 @@ function common(number) {
 }
   
 function firstDigit(seed){
-    let x = String(seed)[0];
+    let x = String(seed)[0];    
     return Number(x);
 
 }
 
-function textureInit(seed){
-    const uvpos = firstDigit(seed);
-    const scale = digitSum(seed,false) / digitSum(seed);
-    const octaves = (lcg(seed)% 6) + 2
-    const tex = [uvpos,scale,octaves]
-    return(tex);
-
+export function textureInit(seed,which=0){
+    var type = ((seed+ which)%4);
+    seed = lcg(seed+which);
+    var uvpos = firstDigit(seed);
+    var scale = common(seed);
+    var octaves = Math.floor((lcg(seed)% 6) + 2);
+    return (new THREE.Vector4(type,uvpos,scale,octaves));
+}
+export function returnObjTex(seed){
+    return ((seed %3) +1);
 }
 export function objTextures(seed){
     switch (seed % 3){
@@ -161,7 +170,7 @@ export function colorgen(seed){
                 color.push(returnColorComp(colorComp));
             }
         }
-    return color;
+    return new THREE.Vector3(color[0],color[1],color[2]);
 }
 export function objColors(seed){
     if ((magnitude(seed)) >= .85){

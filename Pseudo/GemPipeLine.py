@@ -26,8 +26,9 @@ def Base36(seed):
         else:
             break
     return int(seed)
+    
 
-listOfObjects =["Cube", "Hex Bipyramid", "Icosahedron", "Oct Cupola", "Octahedron", "Pyramid", "Sphere", "Square Antiprism", "Torus", "Triak Tetrahedron",  "Triaug Pyramid", "Truncated Cube"]
+listOfObjects =["Cube", "Hex Bipyramid", "Icosahedron", "Oct Cupola", "Octahedron", "Pyramid", "Sphere", "Sq Antiprism", "Torus", "Triak Tetrahedron",  "Triaug Pyramid", "Truncated Cube"]
 def geo(seed):
     x= ("Its a ")
     geo = (seed % 12)

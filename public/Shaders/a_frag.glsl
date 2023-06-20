@@ -1,12 +1,15 @@
 varying vec3 vPos;
-uniform vec3 uPos;
-varying vec3 vnorm;
-uniform vec3 unorm;
-uniform vec3 Colorie;
+uniform int amtofTex;
+uniform vec4 tex1;
+uniform vec4 tex2;
+uniform vec4 tex3;
+uniform int colorAmt;
+uniform vec3 col1;
+uniform vec3 col2;
+uniform vec3 col3;
 #define MAX_ITER 100
 
 
-const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio 
 vec3 quintic(vec3 p) {
   return p*p*p*(p*(p*6.0-15.0)+10.0);
 }
@@ -28,12 +31,9 @@ float hash13(vec3 src) {
     return uintBitsToFloat(h & 0x007fffffu | 0x3f800000u) - 1.0;
 }
 
-float sinstriped(float axis,float scale){
-    scale *=3.1415;
-    return sin((axis* scale));
-}
-float sawstriped(float axis,float scale){
-    return fract((axis* scale));
+float wavey(float axis, float axissub, float scale, float waviness){
+    scale *= 6.28;
+    return  sin(scale *axis- (waviness*  sin(scale * axissub)));
 }
 
 vec3 randomVec(vec3 p) 
@@ -209,53 +209,47 @@ float voronoi(vec3 uv,float uvpos, float scale ){
     return minDist;
 }
 
-
-
-struct colorStop{
-    vec3 color;
-    float position;
-};
-
-vec3 colorRamp(colorStop[3] colors, float fac){
-    int index =0;
-    for(int i = 0; i < colors.length() -1; i++) {
-        colorStop currentColor = colors[i];
-        colorStop nextColor = colors[i+1];
-        
-        bool isInbetween = currentColor.position <= fac;
-        index = isInbetween ? i : index;
-
-    }
-    colorStop currentColor = colors[index];
-    colorStop nextColor = colors[index+1];
-
-    float range = nextColor.position - currentColor.position;
-    float lerpfactor = (fac - currentColor.position)/ range;
-    return mix(currentColor.color,nextColor.color,lerpfactor);
+float texChooser(vec4 init){
+    int tex = int(init.x);
+    vec3 pos = vPos;
+    float texChosen =0.;
+    switch (tex){
+        case 0:
+            texChosen = fractalValueNoise(pos,init.y,init.z,int(init.w));
+            return texChosen;
+        case 1:
+            return fractalPerlin(pos,init.y,init.z,int(init.w));
+        case 2:
+            return voronoi(pos,init.y,init.z);
+        case 3:
+            return smoothstep(0.,1.,wavey(pos.x,pos.z,init.y/5.,(init.z)/7.));
+        }
 }
 
 
-    void main() {
-        vec3 pos = vPos + uPos; // Modify the pos variable with uPos
-        pos += 1.;
-        pos /= 2.;
-        vec3 norm = vnorm + unorm;
-        vec3 color = vec3(0.);
-        vec3 girdPos = fract(pos);
-        vec3 gridPosId = floor(pos);
-        gridPosId *= .25;
 
-        colorStop[3] colors = colorStop[](
-            colorStop(vec3(0.07f, 0.15f, 0.52f),0.),
-            colorStop(vec3(0.,1.,0.),.4),
-            colorStop(vec3(1.,0.,0.),1.)
-        );
-        float fractalValue = fractalValueNoise(pos,0.,7.,10);
-        float voronoee = voronoi(pos,10.,7.);
-        float finalFinal = mix(fractalValue,voronoee,.8);
-        finalFinal =(fractalValue + voronoee)/2.; 
-        vec3 finalColor = colorRamp(colors,(finalFinal));
-        color = vec3(finalColor);
-        color = vec3(Colorie);
-        gl_FragColor = vec4(color,1.); 
+void main() {
+    vec3 pos = vPos;
+    vec3 color = vec3(0.);
+
+
+float finalTex = 0.;
+    switch (amtofTex){
+        case 1:
+            finalTex = texChooser(tex1);
+            break;
+        case 2:
+            finalTex = mix(texChooser(tex1),texChooser(tex2),.5);
+            break;
+        case 3:
+            finalTex = mix(texChooser(tex1),texChooser(tex2),texChooser(tex3));
+            break;
     }
+finalTex = sin(finalTex);
+float h = .4;
+vec3 finalcolor = mix(mix(col1,col2,finalTex/h),mix(col2,col3,(finalTex- h)/(1.-h)),step(h,finalTex));
+
+color = smoothstep(vec3(0.),vec3(1.),finalcolor);
+
+    gl_FragColor = vec4(finalcolor,1.); 
+}
