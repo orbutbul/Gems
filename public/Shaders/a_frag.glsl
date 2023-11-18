@@ -247,6 +247,7 @@ float finalTex = 0.;
     }
 finalTex = sin(finalTex);
 float h = .4;
+
 vec3 finalcolor = mix(mix(col1,col2,finalTex/h),mix(col2,col3,(finalTex- h)/(1.-h)),step(h,finalTex));
 
 color = smoothstep(vec3(0.),vec3(1.),finalcolor);

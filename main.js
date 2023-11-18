@@ -7,6 +7,7 @@ import * as Seed from './Seed.js';
 
 import fragment from './Public/Shaders/a_frag.glsl?raw';
 import vertex from './Public/Shaders/a_vert.glsl?raw';
+
 let models = [];
 document.getElementById("submitBtn").addEventListener("click", function(event) {
     event.preventDefault();  // Prevent the form from being submitted to a server.
@@ -15,29 +16,35 @@ document.getElementById("submitBtn").addEventListener("click", function(event) {
     var seed = document.getElementById("seedId").value;  
     console.log(seed)
     // Regenerate the object.
+
     generateObject(seed);
 });
 
 
 function generateObject(final){
     
-    final = Seed.Base36(final);
-
+    let g = new Seed.Gem(final)
+    console.log(g.genTex())
     for (const model of models) {
         scene.remove(model);
     }
-
     var gemMaterial = new THREE.ShaderMaterial({
         transparent: true,
         uniforms: { 
-            amtofTex: {value: ((final %3) +1)},
-            tex1: { value: Seed.textureInit(final)},
-            tex2: { value: Seed.textureInit(final, 1)},
-            tex3: { value: Seed.textureInit(final, 3)},
-            colorAmt: {value:Seed.digitProduct(final,false)%2},
-            col1: {value: Seed.colorgen(final)},
-            col2: {value: Seed.colorgen(Seed.lcg(final))},
-            col3: {value: Seed.colorgen(Seed.lcg(final/2))}
+            amtofTex: {value:g.amtOfTex()},
+            // tex1: { value: Seed.textureInit(final)},
+            // tex2: { value: Seed.textureInit(final, 1)},
+            // tex3: { value: Seed.textureInit(final, 3)},
+  
+            tex1: {value: g.genTex()[0]},
+            tex2: {value: g.genTex()[1]},
+            tex3: {value: g.genTex()[2]},
+            col1: {value: g.genCol()[0]},
+            col2: {value: g.genCol()[1]},
+            col3: {value: g.genCol()[2]},
+            // col1: {value: Seed.colorgen(final)},
+            // col2: {value: Seed.colorgen(Seed.lcg(final))},
+            // col3: {value: Seed.colorgen(Seed.lcg(final/2))}
 
             }
         ,
@@ -61,7 +68,7 @@ function generateObject(final){
             scene.add(loadedobject);
         });
     }
-    gltfModel(Seed.geo(final));
+    gltfModel(g.generateShapes());
 
 }
 
